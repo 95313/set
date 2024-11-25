@@ -16,7 +16,7 @@ get_mysql_password() {
         echo "Error: MySQL password file ~/.pwdmysql not found"
         exit 1
     }
-    cat ~/.pwdmysql
+    cat /root/.pwdmysql
 }
 
 # Get PHP version
