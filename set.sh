@@ -154,7 +154,7 @@ install_mariadb() {
 }
 
 install_wp_cli(){
-    echo "install wp cli"e
+    echo "install wp cli"
     curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
     chmod +x /usr/local/bin/wp
 }
