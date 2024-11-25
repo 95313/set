@@ -10,15 +10,6 @@ get_php_version() {
     php -v | head -n1 | cut -d" " -f2 | cut -d"." -f1,2
 }
 
-# Function to get MySQL root password
-get_mysql_password() {
-    if [ ! -f /root/.pwdmysql ]; then
-        echo "Error: MySQL password file ~/.pwdmysql not found"
-        exit 1
-    }
-    cat /root/.pwdmysql
-}
-
 # Get PHP version
 PHP_VERSION=$(get_php_version)
 if [ -z "$PHP_VERSION" ]; then
@@ -27,9 +18,9 @@ if [ -z "$PHP_VERSION" ]; then
 fi
 
 # Get MySQL password
-MYSQL_PWD=$(get_mysql_password)
-if [ -z "$MYSQL_PWD" ]; then
-    echo "Error: MySQL password is empty"
+MYSQL_ROOT_PASSWORD=$(cat ~/.pwdmysql)
+if [ -z "$MYSQL_ROOT_PASSWORD" ]; then
+    echo "Error: MySQL password file is empty"
     exit 1
 fi
 
@@ -40,7 +31,7 @@ sanitize_domain() {
 
 # Function to execute MySQL commands
 execute_mysql() {
-    mysql -u root -p"${MYSQL_PWD}" -e "$1"
+    mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "$1"
 }
 
 # Domain input with confirmation
