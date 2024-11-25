@@ -48,6 +48,12 @@ install_nginx() {
     systemctl start nginx
 }
 
+# Install Certbot
+install_certbot() {
+    echo "Installing Certbot..."
+    apt-get install -y certbot python3-certbot-nginx
+}
+
 # Install IonCube Loader
 install_ioncube() {
     echo "Installing IonCube Loader..."
@@ -91,18 +97,20 @@ install_php() {
     echo "Installing PHP 8.3 and extensions..."
     apt-get install -y \
     php8.3-fpm \
+    php8.3-common \
     php8.3-mysql \
+    php8.3-xml \
+    php8.3-intl \
     php8.3-curl \
     php8.3-gd \
-    php8.3-intl \
-    php8.3-mbstring \
-    php8.3-soap \
-    php8.3-xml \
-    php8.3-zip \
     php8.3-imagick \
-    php8.3-bcmath \
+    php8.3-cli \
+    php8.3-dev \
+    php8.3-imap \
+    php8.3-mbstring \
     php8.3-opcache \
-    php8.3-cli
+    php8.3-soap \
+    php8.3-zip
     
     # Configure php.ini
     PHP_INI="/etc/php/8.3/fpm/php.ini"
@@ -145,6 +153,12 @@ install_mariadb() {
     echo "MariaDB root password has been saved to /root/.pwdmysql"
 }
 
+install_wp_cli(){
+    echo "install wp cli"e
+    curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    chmod +x /usr/local/bin/wp
+}
+
 # Verify installations
 verify_installations() {
     echo "Verifying installations..."
@@ -165,9 +179,11 @@ main() {
     detect_architecture
     update_system
     install_nginx
+    install_certbot
     install_php
     install_ioncube
     install_mariadb
+    install_wp_cli
     verify_installations
     
     echo "Installation completed successfully!"
