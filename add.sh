@@ -48,22 +48,9 @@ sanitize_domain() {
     echo "$1" | sed 's/[^a-zA-Z0-9]/_/g' | tr '[:upper:]' '[:lower:]'
 }
 
-validate_domain() {
-    if [[ $1 =~ ^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$ ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 # Domain input with validation and confirmation
 while true; do
     read -p "Enter domain name (e.g., example.com): " DOMAIN
-    
-    if ! validate_domain "$DOMAIN"; then
-        echo "Invalid domain format. Please enter a valid domain (e.g., example.com)"
-        continue
-    fi
     
     echo "You entered: $DOMAIN"
     read -p "Is this correct? (y/n): " confirm
