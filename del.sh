@@ -12,7 +12,7 @@ get_php_version() {
 
 # Function to get MySQL root password
 get_mysql_password() {
-    if [ ! -f ~/.pwdmysql ]; then
+    if [ ! -f /root/.pwdmysql ]; then
         echo "Error: MySQL password file ~/.pwdmysql not found"
         exit 1
     }
