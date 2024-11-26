@@ -94,6 +94,9 @@ if ! execute_mysql "FLUSH PRIVILEGES"; then
     exit 1
 fi
 
+echo "Removing SSL..."
+certbot delete --cert-name ${DOMAIN}
+
 # Remove credentials file
 echo "Removing credentials file..."
 rm -f "/root/.wp_creds_${SANITIZED_DOMAIN}"
@@ -113,4 +116,5 @@ echo "✓ Website files"
 echo "✓ Nginx configuration"
 echo "✓ PHP-FPM pool configuration (PHP ${PHP_VERSION})"
 echo "✓ Database and database user"
+echo "✓ SSL keys"
 echo "✓ Credentials file"
