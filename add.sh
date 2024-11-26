@@ -238,17 +238,13 @@ sed -i "s/password_here/${DB_PASS}/" wp-config.php
 
 # Generate and insert WordPress salts
 SALTS=$(curl -s https://api.wordpress.org/secret-key/1.1/salt/)
-sed -i "/put your unique phrase here/d" wp-config.php
-echo "$SALTS" >> wp-config.php
+SaltStart='\/\*\*#@+'
+SaltEnd='\/\*\*#@-\*\/'
 
-# Add extra security to wp-config.php
-cat >> wp-config.php << EOF
-
-/* Custom Security Settings */
-define('DISALLOW_FILE_EDIT', true);
-define('AUTOMATIC_UPDATER_DISABLED', false);
-define('WP_AUTO_UPDATE_CORE', 'minor');
-EOF
+sed "
+    /${SaltStart}/ r ${SALTS}
+    //,/${SaltEnd}/ d
+" /wp-config.php
 
 # Set correct permissions
 chown -R www-data:www-data "$WEBROOT"
