@@ -36,8 +36,11 @@ detect_architecture() {
 # Update system packages
 update_system() {
     echo "Updating system packages..."
-    apt-get update
-    apt-get upgrade -y
+    apt-get update &> /dev/null
+    apt-get install -y software-properties-common &> /dev/null
+    add-apt-repository -y ppa:ondrej/php &> /dev/null
+    apt-get update &> /dev/null
+    apt-get upgrade -y &> /dev/null
 }
 
 # Install NGINX
@@ -92,8 +95,6 @@ install_ioncube() {
 # Install PHP 8.3 and extensions
 install_php() {
     echo "Installing PHP 8.3 repository..."
-    apt-get install -y software-properties-common
-    add-apt-repository -y ppa:ondrej/php
     apt-get update
 
     echo "Installing PHP 8.3 and extensions..."
