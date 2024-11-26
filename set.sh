@@ -46,7 +46,7 @@ update_system() {
 # Install NGINX
 install_nginx() {
     echo "Installing NGINX..."
-    apt-get install -y nginx
+    apt-get install -y nginx &> /dev/null
     systemctl enable nginx
     systemctl start nginx
 }
@@ -54,7 +54,7 @@ install_nginx() {
 # Install Certbot
 install_certbot() {
     echo "Installing Certbot..."
-    apt-get install -y certbot python3-certbot-nginx
+    apt-get install -y certbot python3-certbot-nginx &> /dev/null
     (crontab -l 2>/dev/null; echo "0 0,12 * * * certbot renew --quiet") | crontab -
     echo "Automatic SSL certificate renewal set up via crontab"
 }
@@ -68,8 +68,8 @@ install_ioncube() {
     cd $TEMP_DIR
     
     # Download and extract IonCube Loader
-    wget https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_${ARCH}.tar.gz
-    tar xzf ioncube_loaders_lin_${ARCH}.tar.gz
+    wget https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_${ARCH}.tar.gz &> /dev/null
+    tar xzf ioncube_loaders_lin_${ARCH}.tar.gz &> /dev/null
     
     # Get PHP extension directory
     PHP_EXT_DIR=$(php -i | grep extension_dir | awk '{print $3}')
@@ -94,8 +94,6 @@ install_ioncube() {
 
 # Install PHP 8.3 and extensions
 install_php() {
-    echo "Installing PHP 8.3 repository..."
-    apt-get update
 
     echo "Installing PHP 8.3 and extensions..."
     apt-get install -y \
@@ -113,7 +111,7 @@ install_php() {
     php8.3-mbstring \
     php8.3-opcache \
     php8.3-soap \
-    php8.3-zip
+    php8.3-zip &> /dev/null
     
     # Configure php.ini
     PHP_INI="/etc/php/8.3/fpm/php.ini"
@@ -136,7 +134,7 @@ install_php() {
 # Install and secure MariaDB
 install_mariadb() {
     echo "Installing MariaDB..."
-    apt-get install -y mariadb-server
+    apt-get install -y mariadb-server &> /dev/null
     systemctl enable mariadb
     systemctl start mariadb
     
@@ -158,7 +156,7 @@ install_mariadb() {
 
 install_wp_cli(){
     echo "install wp cli"
-    curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar &> /dev/null
     chmod +x /usr/local/bin/wp
 }
 
