@@ -169,7 +169,7 @@ server {
    listen 443 ssl http2;
    ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
-   root /var/www/html/${DOMAIN};
+   root /var/www/${DOMAIN};
    index index.php index.html index.htm;
    error_log /var/log/nginx/${DOMAIN}.error.log;
    server_name ${DOMAIN} www.${DOMAIN};
@@ -181,15 +181,15 @@ server {
    location ~ \.php$ {
        fastcgi_split_path_info ^(.+\.php)(/.+)$;
        fastcgi_param PHP_VALUE open_basedir="/tmp/:/usr/share/php/:/dev/urandom:/dev/shm:/var/lib/php/sessions/:\$document_root";
-       fastcgi_pass unix:/run/php/${PHP_VERSION}-${DOMAIN}-fpm.sock;
+       fastcgi_pass unix:/run/php/php${PHP_VERSION}-fpm-${DOMAIN}.sock;
        fastcgi_index index.php;
        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
        include fastcgi_params;
    }
    location = /wp-login.php {
-       limit_req zone=limit burst=1 nodelay;
+       limit_req zone=limit burst=20 nodelay;
        limit_req_status 429;
-       fastcgi_pass unix:/run/php/php${PHP_VERSION}-${DOMAIN}-fpm.sock;
+       fastcgi_pass unix:/run/php/php${PHP_VERSION}-fpm-${DOMAIN}.sock;
        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
        include fastcgi_params;
    }
