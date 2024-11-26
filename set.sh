@@ -52,6 +52,8 @@ install_nginx() {
 install_certbot() {
     echo "Installing Certbot..."
     apt-get install -y certbot python3-certbot-nginx
+    (crontab -l 2>/dev/null; echo "0 0,12 * * * certbot renew --quiet") | crontab -
+    echo "Automatic SSL certificate renewal set up via crontab"
 }
 
 # Install IonCube Loader
