@@ -41,7 +41,7 @@ echo "Detected PHP version: ${PHP_VERSION}"
 
 # Rest of your functions
 generate_password() {
-    tr -dc 'A-Za-z0-9!#$%&()*+,-./:;<=>?@[\]^_`{|}~' </dev/urandom | head -c 24
+    tr -dc 'A-Za-z0-9#$%&' </dev/urandom | head -c 24
 }
 
 sanitize_domain() {
@@ -177,13 +177,6 @@ server {
        fastcgi_param PHP_VALUE open_basedir="/tmp/:/usr/share/php/:/dev/urandom:/dev/shm:/var/lib/php/sessions/:\$document_root";
        fastcgi_pass unix:/run/php/php${PHP_VERSION}-fpm-${DOMAIN}.sock;
        fastcgi_index index.php;
-       fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-       include fastcgi_params;
-   }
-   location = /wp-login.php {
-       limit_req zone=limit burst=20 nodelay;
-       limit_req_status 429;
-       fastcgi_pass unix:/run/php/php${PHP_VERSION}-fpm-${DOMAIN}.sock;
        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
        include fastcgi_params;
    }
