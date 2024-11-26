@@ -79,6 +79,21 @@ if [ -f "/etc/nginx/sites-available/${DOMAIN}" ]; then
     fi
 fi
 
+ # Check if Certbot is installed
+ if ! command -v certbot &> /dev/null; then
+     echo "Certbot not found. Installing..."
+     apt-get update
+     apt-get install -y certbot python3-certbot-nginx
+ fi
+
+ echo "Installing SSL certificate for ${DOMAIN}"
+ certbot certonly --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" --non-interactive --agree-tos -m "webmaster@${DOMAIN}" --expand
+ 
+ if [ $? -ne 0 ]; then
+     echo "SSL certificate installation failed. Continuing without SSL."
+     INSTALL_SSL="n"
+ fi
+
 # Generate sanitized domain for database usage
 SANITIZED_DOMAIN=$(sanitize_domain "$DOMAIN")
 
@@ -140,8 +155,6 @@ group = www-data
 listen = /run/php/php${PHP_VERSION}-fpm-${DOMAIN}.sock
 listen.owner = www-data
 listen.group = www-data
-php_admin_value[disable_functions] = exec,passthru,shell_exec,system
-php_admin_flag[allow_url_fopen] = off
 pm = dynamic
 pm.max_children = 5
 pm.start_servers = 2
@@ -152,55 +165,64 @@ EOF
 # Create Nginx server block
 cat > "/etc/nginx/sites-available/${DOMAIN}" << EOF
 server {
-    listen 80;
-    server_name ${DOMAIN} www.${DOMAIN};
-    root ${WEBROOT};
-    index index.php index.html;
-
-    # Add security headers
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-    add_header X-XSS-Protection "1; mode=block";
-
-    location / {
-        try_files \$uri \$uri/ /index.php?\$args;
-    }
-
-    location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php${PHP_VERSION}-fpm-${DOMAIN}.sock;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        include fastcgi_params;
-    }
-
-    location ~ /\.ht {
-        deny all;
-    }
-
-    # WordPress security locations
-    location = /wp-config.php { deny all; }
-    location = /readme.html { deny all; }
-    location = /readme.txt { deny all; }
-    location = /license.txt { deny all; }
-    location = /xmlrpc.php { deny all; }
-    location = /install.php { deny all; }
-
-    location = /favicon.ico {
-        log_not_found off;
-        access_log off;
-    }
-
-    location = /robots.txt {
-        log_not_found off;
-        access_log off;
-        allow all;
-    }
-
-    location ~* \.(css|gif|ico|jpeg|jpg|js|png)$ {
-        expires max;
-        log_not_found off;
-        access_log off;
-    }
+   listen 80;
+   listen 443 ssl http2;
+   ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+   ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+   root /var/www/html/${DOMAIN};
+   index index.php index.html index.htm;
+   error_log /var/log/nginx/${DOMAIN}.error.log;
+   server_name ${DOMAIN} www.${DOMAIN};
+   location / {
+      try_files $uri $uri/ /index.php?$args;
+   }
+   if ($http_user_agent ~* (BLEXBot|GrapeshotCrawler|MJ12bot|SemrushBot|AhrefsBot|DotBot) ) { return 301 http://127.0.0.1/; }
+   location ~* /(?:uploads|files)/.*\.(asp|bat|cgi|htm|html|ico|js|jsp|md|php|pl|py|sh|shtml|swf|twig|txt|yaml|yml|zip|gz|tar|bzip2|7z)$ { deny all; }
+   location ~ \.php$ {
+       fastcgi_split_path_info ^(.+\.php)(/.+)$;
+       fastcgi_param PHP_VALUE open_basedir="/tmp/:/usr/share/php/:/dev/urandom:/dev/shm:/var/lib/php/sessions/:$document_root";
+       fastcgi_pass unix:/run/php/${PHP_VERSION}-${DOMAIN}-fpm.sock;
+       fastcgi_index index.php;
+       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+       include fastcgi_params;
+   }
+   location = /wp-login.php {
+       limit_req zone=limit burst=1 nodelay;
+       limit_req_status 429;
+       fastcgi_pass unix:/run/php/php${PHP_VERSION}-${DOMAIN}-fpm.sock;
+       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+       include fastcgi_params;
+   }
+   location = /favicon.ico {
+       log_not_found off;
+       access_log off;
+   }
+   location = /robots.txt {
+       try_files $uri $uri/ /index.php?$args;
+       allow all;
+       log_not_found off;
+       access_log off;
+   }
+   location ~* \.(js|jpg|jpeg|gif|png|css|tgz|gz|rar|bz2|doc|pdf|ppt|tar|wav|bmp|rtf|swf|ico|flv|txt|woff|woff2|svg)$ {
+       expires 365d;
+   }
+   location ~ /\.ht {
+       deny all;
+   }
+   location ~ /\.us {
+       deny all;
+   }
+   location ~* "(base64_encode)(.*)(\()" {
+       deny all;
+   }
+   location ~* "(eval\()" {
+       deny all;
+   }
+   location = /xmlrpc.php {
+       return 403;
+   }
+   rewrite ^/sitemap_index\.xml$ /index.php?sitemap=1 last;
+   rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=$1&sitemap_n=$2 last;
 }
 EOF
 
