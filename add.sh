@@ -135,12 +135,6 @@ echo "Database User: $DB_USER"
 echo "PHP Version: $PHP_VERSION"
 echo "Creds will be saved to: $CREDS_FILE"
 echo "===================="
-read -p "Proceed with installation? (y/n): " proceed
-if [[ ! $proceed =~ ^[Yy]$ ]]; then
-    echo "Setup aborted."
-    rm "$CREDS_FILE"
-    exit 1
-fi
 
 # Create web directory
 WEBROOT="/var/www/${DOMAIN}"
