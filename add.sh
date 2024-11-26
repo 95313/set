@@ -41,7 +41,7 @@ echo "Detected PHP version: ${PHP_VERSION}"
 
 # Rest of your functions
 generate_password() {
-    tr -dc 'A-Za-z0-9#$%&' </dev/urandom | head -c 24
+    tr -dc 'A-Za-z0-9!$#@^' </dev/urandom | head -c 24
 }
 
 sanitize_domain() {
