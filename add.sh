@@ -174,23 +174,23 @@ server {
    error_log /var/log/nginx/${DOMAIN}.error.log;
    server_name ${DOMAIN} www.${DOMAIN};
    location / {
-      try_files $uri $uri/ /index.php?$args;
+      try_files \$uri \$uri/ /index.php?\$args;
    }
-   if ($http_user_agent ~* (BLEXBot|GrapeshotCrawler|MJ12bot|SemrushBot|AhrefsBot|DotBot) ) { return 301 http://127.0.0.1/; }
+   if (\$http_user_agent ~* (BLEXBot|GrapeshotCrawler|MJ12bot|SemrushBot|AhrefsBot|DotBot) ) { return 301 http://127.0.0.1/; }
    location ~* /(?:uploads|files)/.*\.(asp|bat|cgi|htm|html|ico|js|jsp|md|php|pl|py|sh|shtml|swf|twig|txt|yaml|yml|zip|gz|tar|bzip2|7z)$ { deny all; }
    location ~ \.php$ {
        fastcgi_split_path_info ^(.+\.php)(/.+)$;
-       fastcgi_param PHP_VALUE open_basedir="/tmp/:/usr/share/php/:/dev/urandom:/dev/shm:/var/lib/php/sessions/:$document_root";
+       fastcgi_param PHP_VALUE open_basedir="/tmp/:/usr/share/php/:/dev/urandom:/dev/shm:/var/lib/php/sessions/:\$document_root";
        fastcgi_pass unix:/run/php/${PHP_VERSION}-${DOMAIN}-fpm.sock;
        fastcgi_index index.php;
-       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+       fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
        include fastcgi_params;
    }
    location = /wp-login.php {
        limit_req zone=limit burst=1 nodelay;
        limit_req_status 429;
        fastcgi_pass unix:/run/php/php${PHP_VERSION}-${DOMAIN}-fpm.sock;
-       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+       fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
        include fastcgi_params;
    }
    location = /favicon.ico {
@@ -198,7 +198,7 @@ server {
        access_log off;
    }
    location = /robots.txt {
-       try_files $uri $uri/ /index.php?$args;
+       try_files \$uri \$uri/ /index.php?\$args;
        allow all;
        log_not_found off;
        access_log off;
@@ -222,7 +222,7 @@ server {
        return 403;
    }
    rewrite ^/sitemap_index\.xml$ /index.php?sitemap=1 last;
-   rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=$1&sitemap_n=$2 last;
+   rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=\$1&sitemap_n=\$2 last;
 }
 EOF
 
